@@ -1,19 +1,12 @@
 import { randomUUID } from 'node:crypto'
-import { setTimeout as wait } from 'node:timers/promises'
 import { Readable, Transform } from 'node:stream'
-import cloneable from 'cloneable-readable'
 import type { Logger } from 'pino'
-import type { FastifyError } from '@fastify/error'
 
-import { type AiChatHistory, type Provider, type ProviderClient, type ProviderOptions, type ProviderRequestOptions, type ProviderResponse, type AiSessionId, createAiProvider } from './provider.ts'
-import { createStorage, type Storage, type AiStorageOptions } from './storage/index.ts'
-import { parseTimeWindow } from './utils.ts'
-import { HistoryGetError, ModelStateError, OptionError, ProviderNoModelsAvailableError, ProviderRateLimitError, ProviderRequestStreamTimeoutError, ProviderRequestTimeoutError } from './errors.ts'
 import { DEFAULT_HISTORY_EXPIRATION, DEFAULT_MAX_RETRIES, DEFAULT_RATE_LIMIT_MAX, DEFAULT_RATE_LIMIT_TIME_WINDOW, DEFAULT_REQUEST_TIMEOUT, DEFAULT_RESTORE_PROVIDER_COMMUNICATION_ERROR, DEFAULT_RESTORE_PROVIDER_EXCEEDED_QUOTA_ERROR, DEFAULT_RESTORE_RATE_LIMIT, DEFAULT_RESTORE_REQUEST_TIMEOUT, DEFAULT_RESTORE_RETRY, DEFAULT_RETRY_INTERVAL, DEFAULT_STORAGE } from './config.ts'
 import { createEventId, decodeEventStream } from './event.ts'
 
 // supported providers
-export type AiProvider = 'openai' | 'deepseek' | 'gemini'
+export type AiProvider = 'openai' | 'deepseek' | 'gemini' | 'litellm'
 
 export type AiModel = {
   provider: AiProvider

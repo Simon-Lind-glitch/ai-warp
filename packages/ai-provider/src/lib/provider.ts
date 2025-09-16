@@ -1,11 +1,12 @@
-import type { Logger } from 'pino'
-import type { AiProvider, AiResponseResult } from './ai.ts'
-import type { Pool } from 'undici'
 import type { Readable } from 'node:stream'
-import { OptionError } from './errors.ts'
-import { OpenAIProvider } from '../providers/openai.ts'
+import type { Logger } from 'pino'
+import type { Pool } from 'undici'
 import { DeepSeekProvider } from '../providers/deepseek.ts'
 import { GeminiProvider } from '../providers/gemini.ts'
+import { LiteLLMProvider } from '../providers/litellm.ts'
+import { OpenAIProvider } from '../providers/openai.ts'
+import type { AiProvider, AiResponseResult } from './ai.ts'
+import { OptionError } from './errors.ts'
 
 export type AiChatHistory = {
   prompt: string
@@ -13,6 +14,28 @@ export type AiChatHistory = {
 }[]
 
 export type AiSessionId = string
+
+export type AiResponseFormat = {
+    type: String
+    strict: Boolean
+    json_schema: String
+}
+
+
+export type AiToolFunction = {
+  name:string
+  description:string
+  parameters?:Object
+
+}
+export type AiTool = {
+  type: "mcp" | "function"
+  function?:AiToolFunction
+  server_label?:string
+  server_url?:string
+  require_approval?:"always" | "never"
+}
+
 
 export type ProviderRequestOptions = {
   context?: string
@@ -22,6 +45,10 @@ export type ProviderRequestOptions = {
   stream?: boolean
   onStreamChunk?: (response: string) => Promise<string>
   maxTokens?: number
+  responseFormat?:AiResponseFormat
+  tools?:Array<AiTool>
+  allowedTools?:Array<String>
+  toolChoice:string
 }
 
 export interface Provider {
@@ -42,6 +69,7 @@ export interface ProviderClientOptions {
   apiPath?: string
   userAgent?: string
   undiciOptions?: Pool.Options
+  extraHeaders?:Map<String,String>
 }
 
 export type ProviderClientContext = {
@@ -81,6 +109,10 @@ export function createAiProvider (provider: AiProvider, options: ProviderOptions
 
   if (provider === 'gemini') {
     return new GeminiProvider(options, client)
+  }
+
+    if (provider === 'litellm') {
+    return new LiteLLMProvider(options, client)
   }
 
   throw new OptionError(`Provider "${provider}" not supported`)

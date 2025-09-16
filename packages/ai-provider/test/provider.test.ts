@@ -1,8 +1,8 @@
-import { test } from 'node:test'
 import assert from 'node:assert'
+import { test } from 'node:test'
+import pino from 'pino'
 import { Ai, type AiContentResponse } from '../src/lib/ai.ts'
 import { createDummyClient } from './helper/helper.ts'
-import pino from 'pino'
 
 const apiKey = 'test'
 const logger = pino({ level: 'silent' })
@@ -100,17 +100,27 @@ test('should handle all the providers', async () => {
     }
   }
 
+  const liteLLmClient = {
+    ...createDummyClient(),
+    request: async () => {
+      return { candidates: [{ content: { parts: [{ text: 'Response from LiteLLM' }] } }] }
+    }
+  }
+
   const ai = new Ai({
     logger,
     providers: {
       openai: { apiKey, client: openaiClient },
       deepseek: { apiKey, client: deepseekClient },
-      gemini: { apiKey, client: geminiClient }
+      gemini: { apiKey, client: geminiClient },
+      litellm: { apiKey, client: liteLLmClient }
+
     },
     models: [
       { provider: 'openai', model: 'gpt-4o-mini' },
       { provider: 'deepseek', model: 'deepseek-chat' },
-      { provider: 'gemini', model: 'gemini-1.5-flash' }
+      { provider: 'gemini', model: 'gemini-1.5-flash' },
+      { provider: 'litellm', model: 'someModelAliasRegisterdInLiteLLM' }
     ],
   })
   await ai.init()
@@ -135,4 +145,11 @@ test('should handle all the providers', async () => {
     prompt: 'Hello Gemini'
   }) as AiContentResponse
   assert.equal(geminiResponse.text, 'Response from Gemini')
+
+  // Test LiteLLM provider
+  const liteLLMResponse = await ai.request({
+    models: ['litellm:someModelAliasRegisterdInLiteLLM'],
+    prompt: 'Hello SomeModel'
+  }) as AiContentResponse
+  assert.equal(geminiResponse.text, 'Response from LiteLLM')
 })
