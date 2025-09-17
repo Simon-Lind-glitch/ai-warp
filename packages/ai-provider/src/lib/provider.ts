@@ -16,26 +16,33 @@ export type AiChatHistory = {
 export type AiSessionId = string
 
 export type AiResponseFormat = {
-    type: String
-    strict: Boolean
-    json_schema: String
+  type: string
+  strict: boolean
+  json_schema: string
 }
 
-
-export type AiToolFunction = {
-  name:string
-  description:string
-  parameters?:Object
-
-}
-export type AiTool = {
-  type: "mcp" | "function"
-  function?:AiToolFunction
-  server_label?:string
-  server_url?:string
-  require_approval?:"always" | "never"
+export type AiToolFunctionDefinition = {
+  name: string
+  description: string
+  parameters?: Object
 }
 
+export type AiToolMCP = AiToolRequiresApproval & {
+  type: 'mcp'
+  server_label: string
+  server_url: string
+}
+
+export type AiToolFunction = AiToolRequiresApproval & {
+  type: 'function'
+  function: AiToolFunctionDefinition
+}
+
+export type AiToolRequiresApproval = {
+  require_approval?: 'always' | 'never'
+}
+
+export type AiTool = AiToolMCP | AiToolFunction
 
 export type ProviderRequestOptions = {
   context?: string
@@ -45,10 +52,12 @@ export type ProviderRequestOptions = {
   stream?: boolean
   onStreamChunk?: (response: string) => Promise<string>
   maxTokens?: number
-  responseFormat?:AiResponseFormat
-  tools?:Array<AiTool>
-  allowedTools?:Array<String>
-  toolChoice:string
+  extraHeaders?: Record<string, string>
+  responseFormat?: AiResponseFormat
+  tools?: Array<AiTool>
+  allowedTools?: Array<string>
+  toolChoice: string
+  apiKey?: string
 }
 
 export interface Provider {
@@ -69,7 +78,6 @@ export interface ProviderClientOptions {
   apiPath?: string
   userAgent?: string
   undiciOptions?: Pool.Options
-  extraHeaders?:Map<String,String>
 }
 
 export type ProviderClientContext = {
@@ -98,7 +106,7 @@ export type ProviderResponse = ProviderContentResponse | Readable
 
 export type StreamChunkCallback = (response: string) => Promise<string>
 
-export function createAiProvider (provider: AiProvider, options: ProviderOptions, client?: ProviderClient) {
+export function createAiProvider(provider: AiProvider, options: ProviderOptions, client?: ProviderClient) {
   if (provider === 'openai') {
     return new OpenAIProvider(options, client)
   }
@@ -111,7 +119,7 @@ export function createAiProvider (provider: AiProvider, options: ProviderOptions
     return new GeminiProvider(options, client)
   }
 
-    if (provider === 'litellm') {
+  if (provider === 'litellm') {
     return new LiteLLMProvider(options, client)
   }
 

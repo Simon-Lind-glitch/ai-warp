@@ -33,6 +33,11 @@ export type LiteLLMResponse = {
   }
 }
 
+export type LiteLLMFileSearchTool = {
+  type: 'file_search'
+  vector_store_ids: [string]
+}
+
 export type LiteLLMMessage = {
   role: 'system' | 'user' | 'assistant'
   content: string
@@ -46,8 +51,10 @@ export type LiteLLMRequest = {
   stream?: boolean
   response_format?: AiResponseFormat
   tool_choice?: string
-  tools?: Array<AiTool>
-  allowed_tools?: Array<String>
+  tools?: Array<AiTool | LiteLLMFileSearchTool>
+  allowed_tools?: Array<string>
+  extraHeaders?: Record<string, string>
+  virtualKey?: string
 }
 
 export type LiteLLMClientOptions = ProviderClientOptions & {
@@ -57,7 +64,6 @@ export type LiteLLMClientOptions = ProviderClientOptions & {
   userAgent: string
   providerName: string
   undiciOptions?: Pool.Options
-  extraHeaders?: Map<String,String>
   checkResponseFn?: (response: any, context: ProviderClientContext, providerName: string) => Promise<void>
 }
 
@@ -65,19 +71,18 @@ export class LiteLLMProvider extends BaseProvider {
   name: AiProvider = 'litellm'
   providerName: string = LITELLM_PROVIDER_NAME
 
-  constructor (options: LiteLLMOptions, client?: ProviderClient) {
+  constructor(options: LiteLLMOptions, client?: ProviderClient) {
     super(options, client ?? createLiteLLMClient({
       providerName: LITELLM_PROVIDER_NAME,
       baseUrl: options.clientOptions?.baseUrl ?? LITELLM_DEFAULT_BASE_URL,
       apiPath: options.clientOptions?.apiPath ?? LITELLM_DEFAULT_API_PATH,
       apiKey: options.clientOptions?.apiKey ?? '',
       userAgent: options.clientOptions?.userAgent ?? UNDICI_USER_AGENT,
-      undiciOptions: options.clientOptions?.undiciOptions ?? DEFAULT_UNDICI_POOL_OPTIONS,
-      extraHeaders: options.clientOptions?.extraHeaders
+      undiciOptions: options.clientOptions?.undiciOptions ?? DEFAULT_UNDICI_POOL_OPTIONS
     }))
   }
 
-  async request (model: string, prompt: string, options: ProviderRequestOptions): Promise<ProviderResponse> {
+  async request(model: string, prompt: string, options: ProviderRequestOptions): Promise<ProviderResponse> {
     const messages: LiteLLMMessage[] = options.context ? [{ role: 'system', content: options.context }] : []
     messages.push(...this.chatHistoryToMessages(options.history))
     messages.push({ role: 'user', content: prompt })
@@ -126,7 +131,7 @@ export class LiteLLMProvider extends BaseProvider {
     }
   }
 
-  private chatHistoryToMessages (chatHistory?: AiChatHistory): LiteLLMMessage[] {
+  private chatHistoryToMessages(chatHistory?: AiChatHistory): LiteLLMMessage[] {
     if (chatHistory === undefined) {
       return []
     }
@@ -145,13 +150,13 @@ class LiteLLMStreamTransformer extends Transform {
   providerName: string
   chunkCallback?: StreamChunkCallback
 
-  constructor (providerName: string, chunkCallback?: StreamChunkCallback) {
+  constructor(providerName: string, chunkCallback?: StreamChunkCallback) {
     super()
     this.providerName = providerName
     this.chunkCallback = chunkCallback
   }
 
-  async _transform (chunk: Buffer, _encoding: string, callback: (error?: Error | null, data?: any) => void) {
+  async _transform(chunk: Buffer, _encoding: string, callback: (error?: Error | null, data?: any) => void) {
     try {
       const events = parseEventStream(chunk.toString('utf8'))
       for (const event of events) {
@@ -206,7 +211,7 @@ class LiteLLMStreamTransformer extends Transform {
   }
 }
 
-function mapResponseResult (result: string | undefined): AiResponseResult {
+function mapResponseResult(result: string | undefined): AiResponseResult {
   // response is complete
   if (result === 'stop') {
     return 'COMPLETE'

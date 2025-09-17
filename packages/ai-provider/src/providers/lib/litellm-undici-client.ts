@@ -4,7 +4,7 @@ import { OptionError, ProviderExceededQuotaError, ProviderResponseError } from '
 import type { ProviderClient, ProviderClientContext, ProviderClientOptions } from '../../lib/provider.ts'
 import type { LiteLLMClientOptions, LiteLLMRequest } from '../litellm.ts'
 
-async function checkResponse (response: any, context: ProviderClientContext, providerName: string) {
+async function checkResponse(response: any, context: ProviderClientContext, providerName: string) {
   if (response.statusCode !== 200) {
     const errorText = await response.body.text()
     context.logger.error({ statusCode: response.statusCode, error: errorText }, `${providerName} API response error`)
@@ -15,7 +15,7 @@ async function checkResponse (response: any, context: ProviderClientContext, pro
   }
 }
 
-export function createLiteLLMClient (options: LiteLLMClientOptions) {
+export function createLiteLLMClient(options: LiteLLMClientOptions) {
   // TODO validate options
   if (!options.apiKey) {
     throw new OptionError(`${options.providerName} apiKey is required`)
@@ -30,10 +30,9 @@ export function createLiteLLMClient (options: LiteLLMClientOptions) {
       return {
         pool: new undici.Pool(baseUrl, undiciOptions),
         headers: {
-          Authorization: `Bearer ${apiKey}`,
+          ...(apiKey && { Authorization: `Bearer ${apiKey}` }),
           'Content-Type': 'application/json',
-          'User-Agent': userAgent,
-          ...Object.fromEntries(options.extraHeaders ? [...options.extraHeaders] as [string, string][] : []),
+          'User-Agent': userAgent
         }
       }
     },
