@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream'
 import undici from 'undici'
-import { OptionError, ProviderExceededQuotaError, ProviderResponseError } from '../../lib/errors.ts'
+import { ProviderExceededQuotaError, ProviderResponseError } from '../../lib/errors.ts'
 import type { ProviderClient, ProviderClientContext, ProviderClientOptions } from '../../lib/provider.ts'
 import type { LiteLLMClientOptions, LiteLLMRequest } from '../litellm.ts'
 
@@ -16,11 +16,6 @@ async function checkResponse(response: any, context: ProviderClientContext, prov
 }
 
 export function createLiteLLMClient(options: LiteLLMClientOptions) {
-  // TODO validate options
-  if (!options.apiKey) {
-    throw new OptionError(`${options.providerName} apiKey is required`)
-  }
-
   const { providerName, baseUrl, apiKey, userAgent, apiPath, undiciOptions } = options
 
   const checkResponseFn = options.checkResponseFn ?? checkResponse
@@ -46,7 +41,7 @@ export function createLiteLLMClient(options: LiteLLMClientOptions) {
         path: apiPath,
         method: 'POST',
         // Or maybe the headers should be from the request?
-        headers: client.headers,
+        headers: { ...client.headers, ...request.extraHeaders, ...(request.virtualKey && { Authorization: `Bearer ${request.virtualKey}` }) },
         blocking: false,
         body: JSON.stringify({
           model: request.model,
