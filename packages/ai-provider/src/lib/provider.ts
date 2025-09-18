@@ -56,7 +56,7 @@ export type ProviderRequestOptions = {
   responseFormat?: AiResponseFormat
   tools?: Array<AiTool>
   allowedTools?: Array<string>
-  toolChoice: string
+  toolChoice?: string
   apiKey?: string
 }
 
