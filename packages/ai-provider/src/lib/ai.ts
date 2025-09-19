@@ -194,7 +194,7 @@ export class Ai {
   // @ts-expect-error
   history: History
 
-  constructor(options: AiOptions) {
+  constructor (options: AiOptions) {
     this.options = this.validateOptions(options)
     this.logger = options.logger
     this.modelSettings = {}
@@ -202,7 +202,7 @@ export class Ai {
 
   // test: options must have all the values, default if not from options
   // model state must be inited if not
-  async init() {
+  async init () {
     this.storage = await createStorage(this.options.storage)
     this.history = new History(this.storage)
     this.providers = new Map()
@@ -267,7 +267,7 @@ export class Ai {
   }
 
   // TODO
-  async close() {
+  async close () {
     const tasks = []
     for (const provider of this.providers.values()) {
       tasks.push(provider.provider.close())
@@ -277,7 +277,7 @@ export class Ai {
     await Promise.allSettled(tasks)
   }
 
-  validateOptions(options: AiOptions): StrictAiOptions {
+  validateOptions (options: AiOptions): StrictAiOptions {
     if (!options.logger) {
       throw new OptionError('logger is required')
     }
@@ -387,7 +387,7 @@ export class Ai {
    * @returns Selected model with provider and limits
    * TODO implement logic, for example round robin, random, least used, etc.
    */
-  async selectModel(models: QueryModel[], skip?: string[]): Promise<ModeleSelection | undefined> {
+  async selectModel (models: QueryModel[], skip?: string[]): Promise<ModeleSelection | undefined> {
     if (models.length === 0) {
       return undefined
     }
@@ -434,7 +434,7 @@ export class Ai {
     }
   }
 
-  restoreModelState(modelState: ModelState, restore: ModelRestore): boolean {
+  restoreModelState (modelState: ModelState, restore: ModelRestore): boolean {
     let wait: number
     if (modelState.state.reason === 'PROVIDER_RATE_LIMIT_ERROR') {
       wait = restore.rateLimit
@@ -452,7 +452,7 @@ export class Ai {
     return modelState.state.timestamp + wait < Date.now()
   }
 
-  async validateRequest(request: Request): Promise<ValidatedRequest> {
+  async validateRequest (request: Request): Promise<ValidatedRequest> {
     if (request.options?.history && request.options?.sessionId) {
       throw new OptionError('history and sessionId cannot be used together')
     }
@@ -502,7 +502,7 @@ export class Ai {
     return validatedRequest
   }
 
-  async request(request: Request): Promise<Response> {
+  async request (request: Request): Promise<Response> {
     const req = await this.validateRequest(request)
 
     this.logger.debug({ request }, 'AI request')
@@ -769,11 +769,11 @@ export class Ai {
   }
 
   // TODO user grants
-  async createSessionId() {
+  async createSessionId () {
     return randomUUID()
   }
 
-  async setModelState(modelName: string, providerState: ProviderState, modelState: ModelState, operationTimestamp: number) {
+  async setModelState (modelName: string, providerState: ProviderState, modelState: ModelState, operationTimestamp: number) {
     if (!modelState) {
       throw new ModelStateError('Model state is required')
     }
@@ -799,7 +799,7 @@ export class Ai {
     }
   }
 
-  async getModelState(modelName: string, provider: ProviderState): Promise<ModelState | undefined> {
+  async getModelState (modelName: string, provider: ProviderState): Promise<ModelState | undefined> {
     return await provider.models.get(`${provider.provider.name}:${modelName}`)
   }
 
@@ -810,7 +810,7 @@ export class Ai {
    * @param rateLimitState - The rate limit state
    * TODO use a different key to avoid to get and set the whole state
    */
-  async updateModelStateRateLimit(modelName: string, providerState: ProviderState, rateLimitState: ModelState['rateLimit']) {
+  async updateModelStateRateLimit (modelName: string, providerState: ProviderState, rateLimitState: ModelState['rateLimit']) {
     const key = `${providerState.provider.name}:${modelName}`
     const m = await providerState.models.get(key)
 
@@ -818,7 +818,7 @@ export class Ai {
     await providerState.models.set(key, m)
   }
 
-  async checkRateLimit(model: ModeleSelection, rateLimit: { max: number, timeWindow: number }) {
+  async checkRateLimit (model: ModeleSelection, rateLimit: { max: number, timeWindow: number }) {
     const now = Date.now()
     const windowMs = rateLimit.timeWindow
     const modelState = model.model
@@ -843,7 +843,7 @@ export class Ai {
     }
   }
 
-  async requestTimeout(promise: Promise<ProviderResponse>, timeout: number, isStream?: boolean): Promise<ProviderResponse> {
+  async requestTimeout (promise: Promise<ProviderResponse>, timeout: number, isStream?: boolean): Promise<ProviderResponse> {
     let timer: NodeJS.Timeout
     if (isStream) {
       // For streaming responses, we need to wrap the stream to handle timeout between chunks
@@ -870,7 +870,7 @@ export class Ai {
     }
   }
 
-  private wrapStreamWithTimeout(stream: Readable, timeout: number): Readable {
+  private wrapStreamWithTimeout (stream: Readable, timeout: number): Readable {
     let timeoutId: NodeJS.Timeout | undefined
 
     const resetTimeout = () => {
@@ -884,12 +884,12 @@ export class Ai {
     }
 
     const timeoutTransform = new Transform({
-      transform(chunk: Buffer, _encoding: string, callback: (error?: Error | null, data?: any) => void) {
+      transform (chunk: Buffer, _encoding: string, callback: (error?: Error | null, data?: any) => void) {
         resetTimeout()
         callback(null, chunk)
       },
 
-      flush(callback: (error?: Error | null, data?: any) => void) {
+      flush (callback: (error?: Error | null, data?: any) => void) {
         if (timeoutId) {
           clearTimeout(timeoutId)
         }
@@ -914,11 +914,11 @@ export class Ai {
     return timeoutTransform
   }
 
-  private createResumeStream(events: any[], sessionId: AiSessionId): Readable {
+  private createResumeStream (events: any[], sessionId: AiSessionId): Readable {
     let eventIndex = 0
 
     const resumeStream = new Readable({
-      read() {
+      read () {
         // Process events sequentially with a small delay to simulate streaming
         const processNextEvent = () => {
           if (eventIndex >= events.length) {
@@ -963,7 +963,7 @@ export class Ai {
   }
 }
 
-export function createModelState(modelName: string): ModelState {
+export function createModelState (modelName: string): ModelState {
   return {
     name: modelName,
     rateLimit: { count: 0, windowStart: 0 },
@@ -974,15 +974,15 @@ export function createModelState(modelName: string): ModelState {
 class Models {
   storage: Storage
 
-  constructor(storage: Storage) {
+  constructor (storage: Storage) {
     this.storage = storage
   }
 
-  async get(key: string) {
+  async get (key: string) {
     return await this.storage.valueGet(key)
   }
 
-  async set(key: string, value: any) {
+  async set (key: string, value: any) {
     return await this.storage.valueSet(key, value)
   }
 }
@@ -990,11 +990,11 @@ class Models {
 class History {
   storage: Storage
 
-  constructor(storage: Storage) {
+  constructor (storage: Storage) {
     this.storage = storage
   }
 
-  async push(sessionId: string, eventId: string, value: any, expiration: number) {
+  async push (sessionId: string, eventId: string, value: any, expiration: number) {
     // Add eventId and timestamp to the stored value for resume functionality
     const eventData = {
       ...value,
@@ -1004,14 +1004,14 @@ class History {
     return await this.storage.hashSet(sessionId, eventId, eventData, expiration)
   }
 
-  async range(sessionId: string) {
+  async range (sessionId: string) {
     const hash = await this.storage.hashGetAll(sessionId)
 
     // Convert hash to array and sort by timestamp to maintain order
     return Object.values(hash).sort((a: any, b: any) => a.timestamp - b.timestamp)
   }
 
-  async rangeFromId(sessionId: string, fromEventId: string) {
+  async rangeFromId (sessionId: string, fromEventId: string) {
     const hash = await this.storage.hashGetAll(sessionId)
 
     // Convert to array and sort by timestamp
@@ -1024,7 +1024,7 @@ class History {
     return fromIndex >= 0 ? events.slice(fromIndex) : []
   }
 
-  async getEvent(sessionId: string, eventId: string) {
+  async getEvent (sessionId: string, eventId: string) {
     return await this.storage.hashGet(sessionId, eventId)
   }
 }
