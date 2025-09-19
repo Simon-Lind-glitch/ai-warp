@@ -100,7 +100,7 @@ test('should handle all the providers', async () => {
     }
   }
 
-  const liteLLmClient = {
+  const liteLLMClient = {
     ...createDummyClient(),
     request: async () => {
       return { candidates: [{ content: { parts: [{ text: 'Response from LiteLLM' }] } }] }
@@ -113,7 +113,7 @@ test('should handle all the providers', async () => {
       openai: { apiKey, client: openaiClient },
       deepseek: { apiKey, client: deepseekClient },
       gemini: { apiKey, client: geminiClient },
-      litellm: { apiKey, client: liteLLmClient }
+      litellm: { apiKey, client: liteLLMClient }
 
     },
     models: [
@@ -151,5 +151,5 @@ test('should handle all the providers', async () => {
     models: ['litellm:someModelAliasRegisterdInLiteLLM'],
     prompt: 'Hello SomeModel'
   }) as AiContentResponse
-  assert.equal(geminiResponse.text, 'Response from LiteLLM')
+  assert.equal(liteLLMResponse.text, 'Response from LiteLLM')
 })
