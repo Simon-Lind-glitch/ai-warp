@@ -106,7 +106,7 @@ export type ProviderResponse = ProviderContentResponse | Readable
 
 export type StreamChunkCallback = (response: string) => Promise<string>
 
-export function createAiProvider(provider: AiProvider, options: ProviderOptions, client?: ProviderClient) {
+export function createAiProvider (provider: AiProvider, options: ProviderOptions, client?: ProviderClient) {
   if (provider === 'openai') {
     return new OpenAIProvider(options, client)
   }

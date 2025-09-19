@@ -71,7 +71,7 @@ export class LiteLLMProvider extends BaseProvider {
   name: AiProvider = 'litellm'
   providerName: string = LITELLM_PROVIDER_NAME
 
-  constructor(options: LiteLLMOptions, client?: ProviderClient) {
+  constructor (options: LiteLLMOptions, client?: ProviderClient) {
     super(options, client ?? createLiteLLMClient({
       providerName: LITELLM_PROVIDER_NAME,
       baseUrl: options.clientOptions?.baseUrl ?? LITELLM_DEFAULT_BASE_URL,
@@ -82,7 +82,7 @@ export class LiteLLMProvider extends BaseProvider {
     }))
   }
 
-  async request(model: string, prompt: string, options: ProviderRequestOptions): Promise<ProviderResponse> {
+  async request (model: string, prompt: string, options: ProviderRequestOptions): Promise<ProviderResponse> {
     const messages: LiteLLMMessage[] = options.context ? [{ role: 'system', content: options.context }] : []
     messages.push(...this.chatHistoryToMessages(options.history))
     messages.push({ role: 'user', content: prompt })
@@ -131,7 +131,7 @@ export class LiteLLMProvider extends BaseProvider {
     }
   }
 
-  private chatHistoryToMessages(chatHistory?: AiChatHistory): LiteLLMMessage[] {
+  private chatHistoryToMessages (chatHistory?: AiChatHistory): LiteLLMMessage[] {
     if (chatHistory === undefined) {
       return []
     }
@@ -150,13 +150,13 @@ class LiteLLMStreamTransformer extends Transform {
   providerName: string
   chunkCallback?: StreamChunkCallback
 
-  constructor(providerName: string, chunkCallback?: StreamChunkCallback) {
+  constructor (providerName: string, chunkCallback?: StreamChunkCallback) {
     super()
     this.providerName = providerName
     this.chunkCallback = chunkCallback
   }
 
-  async _transform(chunk: Buffer, _encoding: string, callback: (error?: Error | null, data?: any) => void) {
+  async _transform (chunk: Buffer, _encoding: string, callback: (error?: Error | null, data?: any) => void) {
     try {
       const events = parseEventStream(chunk.toString('utf8'))
       for (const event of events) {
@@ -211,7 +211,7 @@ class LiteLLMStreamTransformer extends Transform {
   }
 }
 
-function mapResponseResult(result: string | undefined): AiResponseResult {
+function mapResponseResult (result: string | undefined): AiResponseResult {
   // response is complete
   if (result === 'stop') {
     return 'COMPLETE'
