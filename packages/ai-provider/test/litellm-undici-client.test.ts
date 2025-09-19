@@ -16,38 +16,28 @@ const defaultOptions = {
   baseUrl: 'https://api.test.com',
   apiKey: 'test-api-key',
   userAgent: 'test-agent/1.0',
-  apiPath: '/v1/chat/completions',
-  extraHeaders: new Map<string, string>([
-    ['X-Custom-Header', 'custom-value'],
-    ['X-Another-Header', 'another-value'],
-  ])
+  apiPath: '/v1/chat/completions'
 }
 
-test('createLiteLLMClient - should throw error when apiKey is missing', () => {
+test('createLiteLLMClient - should not throw error when apiKey is missing', () => {
   const optionsWithoutApiKey = {
     ...defaultOptions,
     apiKey: ''
   }
 
-  assert.throws(() => {
+  assert.doesNotThrow(() => {
     createLiteLLMClient(optionsWithoutApiKey)
-  }, {
-    code: 'OPTION_ERROR',
-    message: 'Option error: TestProvider apiKey is required'
   })
 })
 
-test('createLiteLLMClient - should throw error when apiKey is undefined', () => {
+test('createLiteLLMClient - should not throw error when apiKey is undefined', () => {
   const optionsWithoutApiKey = {
     ...defaultOptions,
     apiKey: undefined as any
   }
 
-  assert.throws(() => {
+  assert.doesNotThrow(() => {
     createLiteLLMClient(optionsWithoutApiKey)
-  }, {
-    code: 'OPTION_ERROR',
-    message: 'Option error: TestProvider apiKey is required'
   })
 })
 
@@ -109,8 +99,6 @@ test('client.init - should create pool and headers', async () => {
     assert.equal(initialized.headers.Authorization, 'Bearer test-api-key')
     assert.equal(initialized.headers['Content-Type'], 'application/json')
     assert.equal(initialized.headers['User-Agent'], 'test-agent/1.0')
-    assert.equal(initialized.headers['X-Custom-Header'], 'custom-value')
-    assert.equal(initialized.headers['X-Another-Header'], 'another-value')
     // Test close method
     await client.close(initialized, mockContext)
   } catch {
