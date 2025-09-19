@@ -1,4 +1,5 @@
 import type { Readable } from 'node:stream'
+import type { JSONSchema } from 'openai/lib/jsonschema.js'
 import type { Logger } from 'pino'
 import type { Pool } from 'undici'
 import { DeepSeekProvider } from '../providers/deepseek.ts'
@@ -7,7 +8,6 @@ import { LiteLLMProvider } from '../providers/litellm.ts'
 import { OpenAIProvider } from '../providers/openai.ts'
 import type { AiProvider, AiResponseResult } from './ai.ts'
 import { OptionError } from './errors.ts'
-
 export type AiChatHistory = {
   prompt: string
   response: string
@@ -15,10 +15,16 @@ export type AiChatHistory = {
 
 export type AiSessionId = string
 
+export type AiRequestJsonSchema = {
+  name: string
+  description?: string
+  schema: JSONSchema
+}
+
 export type AiResponseFormat = {
   type: string
-  strict: boolean
-  json_schema: string
+  strict?: boolean
+  json_schema?: AiRequestJsonSchema
 }
 
 export type AiToolFunctionDefinition = {
@@ -106,7 +112,7 @@ export type ProviderResponse = ProviderContentResponse | Readable
 
 export type StreamChunkCallback = (response: string) => Promise<string>
 
-export function createAiProvider (provider: AiProvider, options: ProviderOptions, client?: ProviderClient) {
+export function createAiProvider(provider: AiProvider, options: ProviderOptions, client?: ProviderClient) {
   if (provider === 'openai') {
     return new OpenAIProvider(options, client)
   }
