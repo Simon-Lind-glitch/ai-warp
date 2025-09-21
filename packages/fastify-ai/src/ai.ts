@@ -4,6 +4,7 @@ import type { Logger } from 'pino'
 import type { Readable } from 'node:stream'
 import { Ai } from '@platformatic/ai-provider'
 import type { AiOptions, AiModel, AiResponseResult, AiChatHistory, AiSessionId } from '@platformatic/ai-provider'
+import type { UserType } from '@fastify/jwt'
 
 const DEFAULT_HEADER_SESSION_ID_NAME = 'x-session-id'
 
@@ -20,6 +21,7 @@ export type FastifyAiRequest = {
   stream?: boolean
   history?: AiChatHistory
   sessionId?: AiSessionId
+  user?: UserType
   resume?: boolean
 }
 
@@ -34,7 +36,7 @@ export type FastifyAiResponse = ContentResponse | Readable
 declare module 'fastify' {
   interface FastifyInstance {
     ai: {
-      request: (request: FastifyAiRequest, reply: FastifyReply) => Promise<FastifyAiResponse>
+      request: (request: FastifyAiRequest, reply?: FastifyReply) => Promise<FastifyAiResponse>
       retrieveHistory: (sessionId: AiSessionId) => Promise<AiChatHistory>
     }
   }
@@ -55,7 +57,7 @@ export default fp(async (fastify, options: AiPluginOptions) => {
   await ai.init()
 
   fastify.decorate('ai', {
-    request: async (request: FastifyAiRequest, reply: FastifyReply): Promise<FastifyAiResponse> => {
+    request: async (request: FastifyAiRequest, reply?: FastifyReply): Promise<FastifyAiResponse> => {
       const response = await ai.request({
         models: request.models,
         prompt: request.prompt,
@@ -65,19 +67,22 @@ export default fp(async (fastify, options: AiPluginOptions) => {
           temperature: request.temperature,
           stream: request.stream,
           history: request.history,
-          sessionId: request.sessionId
+          sessionId: request.sessionId,
+          user: request.user
         }
       } as any)
-      reply.header(options.headerSessionIdName!, response.sessionId)
+      if (reply) {
+        reply.header(options.headerSessionIdName!, response.sessionId)
 
-      if (request.stream) {
-        reply.header('content-type', 'text/event-stream')
+        if (request.stream) {
+          reply.header('content-type', 'text/event-stream')
 
-        // TODO response error
-        return response
+          // TODO response error
+          return response
+        }
+
+        reply.header('content-type', 'application/json')
       }
-
-      reply.header('content-type', 'application/json')
       // TODO response error
       return response
     },

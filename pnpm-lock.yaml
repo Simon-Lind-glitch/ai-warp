@@ -172,6 +172,9 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1
     devDependencies:
+      '@fastify/jwt':
+        specifier: ^9.0.0
+        version: 9.1.0
       '@types/node':
         specifier: ^22.13.9
         version: 22.18.1
