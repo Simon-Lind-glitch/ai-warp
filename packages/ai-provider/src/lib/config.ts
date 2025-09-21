@@ -38,5 +38,5 @@ export const GEMINI_DEFAULT_BASE_URL = 'https://generativelanguage.googleapis.co
 export const GEMINI_DEFAULT_API_PATH = '/v1beta/openai/chat/completions'
 
 export const LITELLM_PROVIDER_NAME = 'LiteLLM'
-export const LITELLM_DEFAULT_BASE_URL = 'what here?'
+export const LITELLM_DEFAULT_BASE_URL = 'https://api.litellm.ai'
 export const LITELLM_DEFAULT_API_PATH = '/v1/chat/completions'
