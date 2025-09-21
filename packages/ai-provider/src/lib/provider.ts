@@ -8,6 +8,7 @@ import { LiteLLMProvider } from '../providers/litellm.ts'
 import { OpenAIProvider } from '../providers/openai.ts'
 import type { AiProvider, AiResponseResult } from './ai.ts'
 import { OptionError } from './errors.ts'
+import type { UserType } from '@fastify/jwt'
 export type AiChatHistory = {
   prompt: string
   response: string
@@ -54,6 +55,7 @@ export type ProviderRequestOptions = {
   context?: string
   history?: AiChatHistory
   sessionId?: AiSessionId
+  user?: UserType
   temperature?: number
   stream?: boolean
   onStreamChunk?: (response: string) => Promise<string>

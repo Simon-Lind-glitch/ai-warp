@@ -567,7 +567,9 @@ export class Ai {
         temperature: req.options.temperature,
         stream: req.options.stream,
         history,
-        maxTokens: selected.settings.limits.maxTokens ?? req.options.maxTokens ?? this.options.limits.maxTokens
+        maxTokens: selected.settings.limits.maxTokens ?? req.options.maxTokens ?? this.options.limits.maxTokens,
+        sessionId,
+        user: req.options.user
       }
 
       const rateLimit = {

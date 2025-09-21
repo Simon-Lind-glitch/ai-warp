@@ -52,6 +52,8 @@ export function createLiteLLMClient (options: LiteLLMClientOptions) {
           tool_choice: request.tool_choice,
           allowed_tools: request.allowed_tools,
           response_format: request.response_format,
+          litellm_session_id: request.session_id,
+          user: request.user,
           stream: false,
           n: 1,
         })
@@ -80,6 +82,8 @@ export function createLiteLLMClient (options: LiteLLMClientOptions) {
           tool_choice: request.tool_choice,
           allowed_tools: request.allowed_tools,
           response_format: request.response_format,
+          litellm_session_id: request.session_id,
+          user: request.user,
           stream: true,
           n: 1,
         })
