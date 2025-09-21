@@ -65,7 +65,9 @@ type StrictAiOptions = AiOptions & {
 }
 
 export type ProviderDefinitionOptions = {
-  apiKey: string,
+  baseUrl?: string
+  apiPath?: string
+  apiKey: string
   client?: ProviderClient
 }
 
@@ -213,6 +215,8 @@ export class Ai {
         logger: this.logger,
         client: this.options.providers[providerId]?.client,
         clientOptions: {
+          baseUrl: this.options.providers[providerId]?.baseUrl,
+          apiPath: this.options.providers[providerId]?.apiPath,
           apiKey: this.options.providers[providerId]?.apiKey ?? ''
         }
       }
