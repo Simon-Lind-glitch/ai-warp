@@ -12,6 +12,7 @@ export class Client {
   private logger: Logger
   private promptPath: string
   private streamPath: string
+  private fetch: typeof fetch
 
   constructor (options: ClientOptions) {
     this.url = options.url.endsWith('/') ? options.url.slice(0, -1) : options.url
@@ -23,6 +24,7 @@ export class Client {
     this.logger = options.logger ?? nullLogger
     this.promptPath = options.promptPath ?? DEFAULT_PROMPT_PATH
     this.streamPath = options.streamPath ?? DEFAULT_STREAM_PATH
+    this.fetch = options.fetch ?? fetch
   }
 
   async ask (options: AskOptions & { stream: true }): Promise<AskResponseStream>
@@ -43,7 +45,8 @@ export class Client {
     })
 
     try {
-      const response = await fetch(endpoint, {
+      const _fetch = this.fetch
+      const response = await _fetch(endpoint, {
         method: 'POST',
         headers: {
           ...this.headers,

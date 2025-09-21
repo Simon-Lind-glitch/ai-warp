@@ -53,6 +53,7 @@ export interface ClientOptions {
   logger?: Logger
   promptPath?: string
   streamPath?: string
+  fetch?: typeof fetch
 }
 
 export type ContextValue = string | number | boolean | null | undefined | ContextObject | ContextValue[]
