@@ -1,17 +1,17 @@
-import type { FastifyError } from '@fastify/error'
+import type {FastifyError} from '@fastify/error'
 import cloneable from 'cloneable-readable'
-import { randomUUID } from 'node:crypto'
-import { Readable, Transform } from 'node:stream'
-import { setTimeout as wait } from 'node:timers/promises'
-import type { Logger } from 'pino'
+import {randomUUID} from 'node:crypto'
+import {Readable, Transform} from 'node:stream'
+import {setTimeout as wait} from 'node:timers/promises'
+import type {Logger} from 'pino'
 
-import { HistoryGetError, ModelStateError, OptionError, ProviderNoModelsAvailableError, ProviderRateLimitError, ProviderRequestStreamTimeoutError, ProviderRequestTimeoutError } from './errors.ts'
-import { type AiChatHistory, type AiSessionId, createAiProvider, type Provider, type ProviderClient, type ProviderOptions, type ProviderRequestOptions, type ProviderResponse } from './provider.ts'
-import { type AiStorageOptions, createStorage, type Storage } from './storage/index.ts'
-import { parseTimeWindow } from './utils.ts'
+import {HistoryGetError, ModelStateError, OptionError, ProviderNoModelsAvailableError, ProviderRateLimitError, ProviderRequestStreamTimeoutError, ProviderRequestTimeoutError} from './errors.ts'
+import {type AiChatHistory, type AiSessionId, createAiProvider, type Provider, type ProviderClient, type ProviderOptions, type ProviderRequestOptions, type ProviderResponse} from './provider.ts'
+import {type AiStorageOptions, createStorage, type Storage} from './storage/index.ts'
+import {parseTimeWindow} from './utils.ts'
 
-import { DEFAULT_HISTORY_EXPIRATION, DEFAULT_MAX_RETRIES, DEFAULT_RATE_LIMIT_MAX, DEFAULT_RATE_LIMIT_TIME_WINDOW, DEFAULT_REQUEST_TIMEOUT, DEFAULT_RESTORE_PROVIDER_COMMUNICATION_ERROR, DEFAULT_RESTORE_PROVIDER_EXCEEDED_QUOTA_ERROR, DEFAULT_RESTORE_RATE_LIMIT, DEFAULT_RESTORE_REQUEST_TIMEOUT, DEFAULT_RESTORE_RETRY, DEFAULT_RETRY_INTERVAL, DEFAULT_STORAGE } from './config.ts'
-import { createEventId, decodeEventStream } from './event.ts'
+import {DEFAULT_HISTORY_EXPIRATION, DEFAULT_MAX_RETRIES, DEFAULT_RATE_LIMIT_MAX, DEFAULT_RATE_LIMIT_TIME_WINDOW, DEFAULT_REQUEST_TIMEOUT, DEFAULT_RESTORE_PROVIDER_COMMUNICATION_ERROR, DEFAULT_RESTORE_PROVIDER_EXCEEDED_QUOTA_ERROR, DEFAULT_RESTORE_RATE_LIMIT, DEFAULT_RESTORE_REQUEST_TIMEOUT, DEFAULT_RESTORE_RETRY, DEFAULT_RETRY_INTERVAL, DEFAULT_STORAGE} from './config.ts'
+import {createEventId, decodeEventStream} from './event.ts'
 
 // supported providers
 export type AiProvider = 'openai' | 'deepseek' | 'gemini' | 'litellm'
@@ -569,7 +569,9 @@ export class Ai {
         history,
         maxTokens: selected.settings.limits.maxTokens ?? req.options.maxTokens ?? this.options.limits.maxTokens,
         sessionId,
-        user: req.options.user
+        user: req.options.user,
+        tools: req.options.tools,
+        tool_choice: req.options.toolChoice,
       }
 
       const rateLimit = {

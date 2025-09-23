@@ -4,7 +4,7 @@ import { ProviderExceededQuotaError, ProviderResponseError } from '../../lib/err
 import type { ProviderClient, ProviderClientContext, ProviderClientOptions } from '../../lib/provider.ts'
 import type { LiteLLMClientOptions, LiteLLMRequest } from '../litellm.ts'
 
-async function checkResponse(response: any, context: ProviderClientContext, providerName: string) {
+async function checkResponse (response: any, context: ProviderClientContext, providerName: string) {
   if (response.statusCode !== 200) {
     const errorText = await response.body.text()
     context.logger.error({ statusCode: response.statusCode, error: errorText }, `${providerName} API response error`)
@@ -15,7 +15,7 @@ async function checkResponse(response: any, context: ProviderClientContext, prov
   }
 }
 
-export function createLiteLLMClient(options: LiteLLMClientOptions) {
+export function createLiteLLMClient (options: LiteLLMClientOptions) {
   const { providerName, baseUrl, apiKey, userAgent, apiPath, undiciOptions } = options
 
   const checkResponseFn = options.checkResponseFn ?? checkResponse
