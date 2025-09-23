@@ -1,3 +1,4 @@
+import type { UserType } from '@fastify/jwt'
 import { Transform, pipeline } from 'node:stream'
 import { promisify } from 'node:util'
 import { Pool } from 'undici'
@@ -8,7 +9,6 @@ import { createEventId, encodeEvent, parseEventStream, type AiStreamEvent } from
 import { type AiChatHistory, type AiResponseFormat, type AiSessionId, type AiTool, type ProviderClient, type ProviderClientContext, type ProviderClientOptions, type ProviderOptions, type ProviderRequestOptions, type ProviderResponse, type StreamChunkCallback } from '../lib/provider.ts'
 import { BaseProvider } from './lib/base.ts'
 import { createLiteLLMClient } from './lib/litellm-undici-client.ts'
-import type { UserType } from '@fastify/jwt'
 
 export type LiteLLMOptions = ProviderOptions
 export type LiteLLMResponse = {
@@ -74,7 +74,7 @@ export class LiteLLMProvider extends BaseProvider {
   name: AiProvider = 'litellm'
   providerName: string = LITELLM_PROVIDER_NAME
 
-  constructor (options: LiteLLMOptions, client?: ProviderClient) {
+  constructor(options: LiteLLMOptions, client?: ProviderClient) {
     super(options, client ?? createLiteLLMClient({
       providerName: LITELLM_PROVIDER_NAME,
       baseUrl: options.clientOptions?.baseUrl ?? LITELLM_DEFAULT_BASE_URL,
@@ -85,7 +85,7 @@ export class LiteLLMProvider extends BaseProvider {
     }))
   }
 
-  async request (model: string, prompt: string, options: ProviderRequestOptions): Promise<ProviderResponse> {
+  async request(model: string, prompt: string, options: ProviderRequestOptions): Promise<ProviderResponse> {
     const messages: LiteLLMMessage[] = options.context ? [{ role: 'system', content: options.context }] : []
     messages.push(...this.chatHistoryToMessages(options.history))
     messages.push({ role: 'user', content: prompt })
@@ -99,7 +99,6 @@ export class LiteLLMProvider extends BaseProvider {
       response_format: options.responseFormat,
       tools: options.tools,
       tool_choice: options.toolChoice,
-      allowed_tools: options.allowedTools,
       session_id: options.sessionId,
       user: options.user
     }
@@ -136,7 +135,7 @@ export class LiteLLMProvider extends BaseProvider {
     }
   }
 
-  private chatHistoryToMessages (chatHistory?: AiChatHistory): LiteLLMMessage[] {
+  private chatHistoryToMessages(chatHistory?: AiChatHistory): LiteLLMMessage[] {
     if (chatHistory === undefined) {
       return []
     }
@@ -155,13 +154,13 @@ class LiteLLMStreamTransformer extends Transform {
   providerName: string
   chunkCallback?: StreamChunkCallback
 
-  constructor (providerName: string, chunkCallback?: StreamChunkCallback) {
+  constructor(providerName: string, chunkCallback?: StreamChunkCallback) {
     super()
     this.providerName = providerName
     this.chunkCallback = chunkCallback
   }
 
-  async _transform (chunk: Buffer, _encoding: string, callback: (error?: Error | null, data?: any) => void) {
+  async _transform(chunk: Buffer, _encoding: string, callback: (error?: Error | null, data?: any) => void) {
     try {
       const events = parseEventStream(chunk.toString('utf8'))
       for (const event of events) {
@@ -216,7 +215,7 @@ class LiteLLMStreamTransformer extends Transform {
   }
 }
 
-function mapResponseResult (result: string | undefined): AiResponseResult {
+function mapResponseResult(result: string | undefined): AiResponseResult {
   // response is complete
   if (result === 'stop') {
     return 'COMPLETE'

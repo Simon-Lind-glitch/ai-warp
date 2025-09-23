@@ -1,3 +1,4 @@
+import type { UserType } from '@fastify/jwt'
 import type { Readable } from 'node:stream'
 import type { JSONSchema } from 'openai/lib/jsonschema.js'
 import type { Logger } from 'pino'
@@ -8,7 +9,6 @@ import { LiteLLMProvider } from '../providers/litellm.ts'
 import { OpenAIProvider } from '../providers/openai.ts'
 import type { AiProvider, AiResponseResult } from './ai.ts'
 import { OptionError } from './errors.ts'
-import type { UserType } from '@fastify/jwt'
 export type AiChatHistory = {
   prompt: string
   response: string
@@ -38,6 +38,7 @@ export type AiToolMCP = AiToolRequiresApproval & {
   type: 'mcp'
   server_label: string
   server_url: string
+  allowed_tools: Array<string>
 }
 
 export type AiToolFunction = AiToolRequiresApproval & {
@@ -63,8 +64,7 @@ export type ProviderRequestOptions = {
   extraHeaders?: Record<string, string>
   responseFormat?: AiResponseFormat
   tools?: Array<AiTool>
-  allowedTools?: Array<string>
-  toolChoice?: string
+  toolChoice?: 'auto' | 'required' | Object
   apiKey?: string
 }
 
