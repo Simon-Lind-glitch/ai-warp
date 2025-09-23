@@ -51,7 +51,7 @@ export type LiteLLMRequest = {
   max_tokens?: number
   stream?: boolean
   response_format?: AiResponseFormat
-  tool_choice?: string
+  tool_choice?: 'auto' | 'required' | Object
   tools?: Array<AiTool | LiteLLMFileSearchTool>
   allowed_tools?: Array<string>
   extraHeaders?: Record<string, string>
@@ -85,7 +85,7 @@ export class LiteLLMProvider extends BaseProvider {
     }))
   }
 
-  async request(model: string, prompt: string, options: ProviderRequestOptions): Promise<ProviderResponse> {
+  async request (model: string, prompt: string, options: ProviderRequestOptions): Promise<ProviderResponse> {
     const messages: LiteLLMMessage[] = options.context ? [{ role: 'system', content: options.context }] : []
     messages.push(...this.chatHistoryToMessages(options.history))
     messages.push({ role: 'user', content: prompt })
@@ -135,7 +135,7 @@ export class LiteLLMProvider extends BaseProvider {
     }
   }
 
-  private chatHistoryToMessages(chatHistory?: AiChatHistory): LiteLLMMessage[] {
+  private chatHistoryToMessages (chatHistory?: AiChatHistory): LiteLLMMessage[] {
     if (chatHistory === undefined) {
       return []
     }
@@ -160,7 +160,7 @@ class LiteLLMStreamTransformer extends Transform {
     this.chunkCallback = chunkCallback
   }
 
-  async _transform(chunk: Buffer, _encoding: string, callback: (error?: Error | null, data?: any) => void) {
+  async _transform (chunk: Buffer, _encoding: string, callback: (error?: Error | null, data?: any) => void) {
     try {
       const events = parseEventStream(chunk.toString('utf8'))
       for (const event of events) {
@@ -215,7 +215,7 @@ class LiteLLMStreamTransformer extends Transform {
   }
 }
 
-function mapResponseResult(result: string | undefined): AiResponseResult {
+function mapResponseResult (result: string | undefined): AiResponseResult {
   // response is complete
   if (result === 'stop') {
     return 'COMPLETE'
