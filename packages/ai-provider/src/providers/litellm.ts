@@ -1,14 +1,14 @@
-import type {UserType} from '@fastify/jwt'
-import {Transform, pipeline} from 'node:stream'
-import {promisify} from 'node:util'
-import {Pool} from 'undici'
-import type {AiProvider, AiResponseResult} from '../lib/ai.ts'
-import {DEFAULT_UNDICI_POOL_OPTIONS, LITELLM_DEFAULT_API_PATH, LITELLM_DEFAULT_BASE_URL, LITELLM_PROVIDER_NAME, UNDICI_USER_AGENT} from '../lib/config.ts'
-import {ProviderResponseNoContentError} from '../lib/errors.ts'
-import {createEventId, encodeEvent, parseEventStream, type AiStreamEvent} from '../lib/event.ts'
-import {type AiChatHistory, type AiResponseFormat, type AiSessionId, type AiTool, type ProviderClient, type ProviderClientContext, type ProviderClientOptions, type ProviderOptions, type ProviderRequestOptions, type ProviderResponse, type StreamChunkCallback} from '../lib/provider.ts'
-import {BaseProvider} from './lib/base.ts'
-import {createLiteLLMClient} from './lib/litellm-undici-client.ts'
+import type { UserType } from '@fastify/jwt'
+import { Transform, pipeline } from 'node:stream'
+import { promisify } from 'node:util'
+import { Pool } from 'undici'
+import type { AiProvider, AiResponseResult } from '../lib/ai.ts'
+import { DEFAULT_UNDICI_POOL_OPTIONS, LITELLM_DEFAULT_API_PATH, LITELLM_DEFAULT_BASE_URL, LITELLM_PROVIDER_NAME, UNDICI_USER_AGENT } from '../lib/config.ts'
+import { ProviderResponseNoContentError } from '../lib/errors.ts'
+import { createEventId, encodeEvent, parseEventStream, type AiStreamEvent } from '../lib/event.ts'
+import { type AiChatHistory, type AiResponseFormat, type AiSessionId, type AiTool, type ProviderClient, type ProviderClientContext, type ProviderClientOptions, type ProviderOptions, type ProviderRequestOptions, type ProviderResponse, type StreamChunkCallback } from '../lib/provider.ts'
+import { BaseProvider } from './lib/base.ts'
+import { createLiteLLMClient } from './lib/litellm-undici-client.ts'
 
 export type LiteLLMOptions = ProviderOptions
 export type LiteLLMResponse = {
@@ -100,7 +100,8 @@ export class LiteLLMProvider extends BaseProvider {
       tools: options.tools,
       tool_choice: options.toolChoice,
       session_id: options.sessionId,
-      user: options.user
+      user: options.user,
+      extraHeaders: options.extraHeaders
     }
 
     if (options.stream) {
