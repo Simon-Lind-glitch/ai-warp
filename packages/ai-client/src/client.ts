@@ -77,9 +77,9 @@ export class Client {
         if (!response.body) {
           throw new Error('Response body is null')
         }
-        const webStream = this.createStreamFromResponse(response.body)
+        const webStream = createStreamFromResponse(response.body)
         return {
-          stream: this.createAsyncIterableStream(webStream),
+          stream: createAsyncIterableStream(webStream),
           headers: response.headers
         }
       } else {
@@ -101,85 +101,27 @@ export class Client {
       throw new Error('Unknown error occurred')
     }
   }
-
-  private createStreamFromResponse (body: ReadableStream<Uint8Array>): ReadableStream<StreamMessage> {
-    let buffer = ''
-
-    return body
-      .pipeThrough(new TextDecoderStream())
-      .pipeThrough(
-        new TransformStream<string, StreamMessage>({
-          transform (chunk, controller) {
-            buffer += chunk
-
-            const events = buffer.split('\n\n')
-            buffer = events.pop() || ''
-
-            for (const eventText of events) {
-              if (eventText.trim()) {
-                const event = parseEvent(eventText)
-                if (event) {
-                  const message = convertEventToMessage(event)
-                  if (message) {
-                    controller.enqueue(message)
-                  }
-                }
-              }
-            }
-          },
-          flush (controller) {
-            if (buffer.trim()) {
-              const event = parseEvent(buffer)
-              if (event) {
-                const message = convertEventToMessage(event)
-                if (message) {
-                  controller.enqueue(message)
-                }
-              }
-            }
-          }
-        })
-      )
-  }
-
-  private createAsyncIterableStream (stream: ReadableStream<StreamMessage>) {
-    const reader = stream.getReader()
-
-    return {
-      async * [Symbol.asyncIterator] () {
-        try {
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
-            if (value) yield value
-          }
-        } finally {
-          reader.releaseLock()
-        }
-      }
-    }
-  }
 }
 
-interface ParsedEvent {
+export interface ParsedEvent {
   event?: string
   data?: string
 }
 
-interface SSEContentData {
+export interface SSEContentData {
   response?: string
 }
 
-interface SSEEndData {
+export interface SSEEndData {
   response: AskResponse
 }
 
-interface SSEErrorData {
+export interface SSEErrorData {
   message?: string
   error?: string
 }
 
-interface SSEResponseData {
+export interface SSEResponseData {
   response?: string | {
     content?: string
     model?: string
@@ -190,9 +132,67 @@ interface SSEResponseData {
   message?: string
 }
 
-type SSEData = SSEContentData | SSEEndData | SSEErrorData | SSEResponseData
+export type SSEData = SSEContentData | SSEEndData | SSEErrorData | SSEResponseData
 
-function parseEvent (eventText: string): ParsedEvent | null {
+export function createStreamFromResponse (body: ReadableStream<Uint8Array>): ReadableStream<StreamMessage> {
+  let buffer = ''
+
+  return body
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(
+      new TransformStream<string, StreamMessage>({
+        transform (chunk, controller) {
+          buffer += chunk
+
+          const events = buffer.split('\n\n')
+          buffer = events.pop() || ''
+
+          for (const eventText of events) {
+            if (eventText.trim()) {
+              const event = parseEvent(eventText)
+              if (event) {
+                const message = convertEventToMessage(event)
+                if (message) {
+                  controller.enqueue(message)
+                }
+              }
+            }
+          }
+        },
+        flush (controller) {
+          if (buffer.trim()) {
+            const event = parseEvent(buffer)
+            if (event) {
+              const message = convertEventToMessage(event)
+              if (message) {
+                controller.enqueue(message)
+              }
+            }
+          }
+        }
+      })
+    )
+}
+
+export function createAsyncIterableStream (stream: ReadableStream<StreamMessage>) {
+  const reader = stream.getReader()
+
+  return {
+    async * [Symbol.asyncIterator] () {
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          if (value) yield value
+        }
+      } finally {
+        reader.releaseLock()
+      }
+    }
+  }
+}
+
+export function parseEvent (eventText: string): ParsedEvent | null {
   const lines = eventText.split('\n')
   const event: ParsedEvent = {}
 
@@ -207,7 +207,7 @@ function parseEvent (eventText: string): ParsedEvent | null {
   return (event.event || event.data) ? event : null
 }
 
-function convertEventToMessage (event: ParsedEvent): StreamMessage | null {
+export function convertEventToMessage (event: ParsedEvent): StreamMessage | null {
   if (!event.data) {
     return null
   }
